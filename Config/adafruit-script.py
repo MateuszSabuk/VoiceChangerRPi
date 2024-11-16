@@ -122,7 +122,7 @@ After=sound.target
 [Service]
 ExecStart=/usr/bin/jackd -d alsa
 Restart=on-failure
-User=<your-username>
+User=mati
 
 [Install]
 WantedBy=default.target""", append=False)
