@@ -8,7 +8,7 @@ fi
 
 
 string=`arecord -l | grep "googlevoicehat_soundcar"`
-if [[ "$string" =~ ^card\s(\d+).+?googlevoicehat_soundcar.+?,\sdevice\s(\d+): ]]; then
+if [[ "$string" =~ ^card[[:space:]]([0-9]+).+?googlevoicehat_soundcar.+?,[[:space:]]device[[:space:]]([0-9]+?): ]]; then
     card=${BASH_REMATCH[1]}
     device=${BASH_REMATCH[2]}
     
