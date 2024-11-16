@@ -5,8 +5,6 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-
-
 string=`arecord -l | grep "googlevoicehat_soundcar"`
 if [[ "$string" =~ ^card[[:space:]]([0-9]+).+?googlevoicehat_soundcar.+?,[[:space:]]device[[:space:]]([0-9]+?): ]]; then
     card=${BASH_REMATCH[1]}
@@ -28,7 +26,27 @@ LimitMEMLOCK=infinity
 
 [Install]
 WantedBy=default.target""" > /etc/systemd/system/jack.service
-    
+     
+    sudo echo """[Unit]
+Description=Simple feed forward from mic to speaker
+After=jack.service
+
+[Service]
+Group=audio
+User=`whoami`
+ExecStart=/usr/bin/ff
+Restart=on-failure
+
+[Install]
+WantedBy=default.target""" > /etc/systemd/system/soundlooptest.service
+     
+    sudo systemctl daemon-reload
+    sudo systemctl enable jack
+    sudo systemctl start jack
+    sudo systemctl enable soundlooptest
+    sudo systemctl start soundlooptest
+
+
 else
     echo "No device found"
 fi

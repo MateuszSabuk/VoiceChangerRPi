@@ -10,6 +10,8 @@ apt upgrade -y || exit
 
 apt install jackd2 libjack-jackd2-dev
 
+g++ ../Code/main.cpp -o ff.o -l jack && sudo cp ff.o /usr/bin/ff
+
 apt install python3-venv
 python -m venv env --system-site-packages
 
