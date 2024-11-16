@@ -40,13 +40,19 @@ int main() {
     } else {
         std::cout << "Jack client is NOT running realtime" << std::endl;
     }
-    
-    // Pause
-    std::cout << "Press enter to continue...";
-    std::cin.get();
 
     // Activate the jack connections
     jack_activate(jackClient);
+
+    const char* capture = "system:capture_1";
+    const char* playback = "system:playback_1";
+
+    if (jack_connect(jackClient, capture, jack_port_name(input_port))) {
+        std::cerr << "Failed to connect input port to capture" << std::endl;
+    }
+    if (jack_connect(jackClient, jack_port_name(output_port), playback)) {
+        std::cerr << "Failed to connect output port to playback" << std::endl;
+    }
 
     // Pause
     std::cout << "Press enter to end...";
