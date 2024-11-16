@@ -34,7 +34,7 @@ After=jack.service
 [Service]
 Group=audio
 User=`whoami`
-ExecStart=/usr/bin/ff
+ExecStart=/usr/local/sbin/ff
 Restart=on-failure
 
 [Install]
