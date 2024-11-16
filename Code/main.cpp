@@ -3,8 +3,10 @@
 
 int main() {
     jack_status_t jackStatus;
+    jack_client_t* jackClient;
+    jack_options_t jackOptions = (jack_options_t)(JackUseExactName | JackServerName);
     // Open a jack client
-    jack_client_t* jackClient = jack_client_open("MatiTest", JackUseExactName | JackServerName, &jackStatus, "default");
+    jackClient = jack_client_open("MatiTest", jackOptions, &jackStatus, "default");
 
     if (jackClient == NULL) {
         std::cerr << "Failed to create JACK client: status = " << jackStatus << std::endl;
