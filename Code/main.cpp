@@ -27,70 +27,17 @@ struct JackContext {
     }
 };
 
-// Singleton instance of the JackContext
-std::unique_ptr<JackContext> g_jack_context;
-
-void cleanup(int signum) {
-    if (g_jack_context) {
-        std::cout << "Cleaning up JACK resources..." << std::endl;
-        g_jack_context.reset();  // Automatically cleans up via the destructor
-    }
-    exit(0);
-}
-
-void daemonize() {
-    // First fork: parent exits, child continues as the daemon
-    pid_t pid = fork();
-    if (pid < 0) {
-        std::cerr << "Failed to fork process" << std::endl;
-        exit(1);
-    }
-    if (pid > 0) {
-        exit(0);  // Parent exits
-    }
-
-    // Create a new session and detach from the controlling terminal
-    if (setsid() < 0) {
-        std::cerr << "Failed to create a new session" << std::endl;
-        exit(1);
-    }
-
-    // Second fork: to prevent the daemon from acquiring a controlling terminal
-    pid = fork();
-    if (pid < 0) {
-        std::cerr << "Failed to fork process" << std::endl;
-        exit(1);
-    }
-    if (pid > 0) {
-        exit(0);  // Parent exits again
-    }
-
-    // Change the working directory to root, or somewhere safe
-    if (chdir("/") < 0) {
-        std::cerr << "Failed to change directory to /" << std::endl;
-        exit(1);
-    }
-
-    // Close standard file descriptors and redirect them to /dev/null
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
-
-    int null_fd = open("/dev/null", O_RDWR);
-    if (null_fd < 0) {
-        std::cerr << "Failed to open /dev/null" << std::endl;
-        exit(1);
-    }
-
-    // Redirect stdin, stdout, stderr to /dev/null
-    dup2(null_fd, STDIN_FILENO);
-    dup2(null_fd, STDOUT_FILENO);
-    dup2(null_fd, STDERR_FILENO);
-}
 
 int main() {
-    daemonize();  // Daemonize the process
-
+    // Singleton instance of the JackContext
+    std::unique_ptr<JackContext> jack_context;
+    auto cleanup [&jack_context](int signum) {
+        if (g_jack_context) {
+            std::cout << "Cleaning up JACK resources..." << std::endl;
+            g_jack_context.reset();  // Automatically cleans up via the destructor
+        }
+        exit(0);
+    }
     // Set up signal handlers
     signal(SIGTERM, cleanup);
     signal(SIGINT, cleanup);
