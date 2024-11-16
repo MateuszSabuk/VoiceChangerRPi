@@ -114,22 +114,8 @@ ExecStart=/usr/bin/aplay -D default -t raw -r 44100 -c 2 -f S16_LE /dev/zero
 [Install]
 WantedBy=multi-user.target""", append=False)
 
-    shell.write_text_file("/etc/systemd/system/jack.service", """
-[Unit]
-Description=JACK Audio Connection Kit
-After=sound.target
-
-[Service]
-ExecStart=/usr/bin/jackd -d alsa
-Restart=on-failure
-User=mati
-
-[Install]
-WantedBy=default.target""", append=False)
-
     shell.run_command("sudo systemctl daemon-reload")
     shell.run_command("sudo systemctl enable aplay")
-    shell.run_command("sudo systemctl enable jack")
 
     if driver_loaded("max98357a"):
         print("Testing...")
