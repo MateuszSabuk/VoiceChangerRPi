@@ -8,7 +8,7 @@ fi
 apt update -y || exit
 apt upgrade -y || exit
 
-apt install jackd2 libjack-jackd2-dev
+apt install jackd2 libjack-jackd2-dev libncurses5-dev libncursesw5-dev
 
 g++ ../Code/main.cpp -o ff.o -ljack -lncurses -lpthread && sudo cp ff.o /usr/local/sbin/ff
 
