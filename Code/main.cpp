@@ -15,13 +15,15 @@
 #include <algorithm> // For std::max_element
 #include <fftw3.h>   // FFTW library
 #include "jack_wrapper.h"
+#include "lpf.h"
 
-#define FFT_SIZE 1024 // Must be a power of 2
-
-#define BUFFER_SIZE 8192
+#define BUFFER_SIZE 4096
 
 float volume_value = 1;
 float pitch_value = 1;
+double lpf_cutoffFrequency = 1000;
+
+LowPassFilter lpf;
 
 jack_port_t *input_port;
 jack_port_t *output_port;
@@ -30,7 +32,7 @@ jack_client_t *jack_client;
 static void signal_handler ( int sig )
 {
     jack_client_close ( jack_client );
-    fprintf ( stderr, "signal received, exiting ...\n" );
+    fprintf ( stderr, "signal received, exiting ...\n\r" );
     exit ( 0 );
 }
 
@@ -46,10 +48,6 @@ std::mutex ring_mutex; // Mutex to ensure thread-safe access to the ring buffer
 size_t write_index = 0;
 float read_index = 0;
 
-// Ring buffer for FFT input
-std::vector<double> fft_input_buffer(FFT_SIZE, 0.0f);
-unsigned int fft_buffer_index = 0;
-
 int process(jack_nframes_t nframes, void *arg)
 {
     // Lock the mutex to safely access the ring buffer
@@ -64,45 +62,11 @@ int process(jack_nframes_t nframes, void *arg)
     for (unsigned int i = 0; i < nframes; ++i) {
         ring_buffer[write_index] = in[i] * volume_value;
         write_index = (write_index + 1) % BUFFER_SIZE;
-
-        // Add input data to the FFT buffer
-        fft_input_buffer[fft_buffer_index] = in[i];
-        fft_buffer_index = (fft_buffer_index + 1) % FFT_SIZE;
     }
-
-    // FFT Processing
-    static std::vector<double> fft_out_real(FFT_SIZE, 0.0); // Real part of FFT output
-    static std::vector<double> fft_out_imag(FFT_SIZE, 0.0); // Imaginary part of FFT output
-    fftw_plan fft_plan = fftw_plan_dft_r2c_1d(FFT_SIZE, fft_input_buffer.data(),
-                                              reinterpret_cast<fftw_complex*>(fft_out_real.data()),
-                                              FFTW_ESTIMATE);
-
-    // Execute the FFT
-    fftw_execute(fft_plan);
-
-    // Calculate magnitudes of the FFT bins
-    std::vector<double> magnitudes(FFT_SIZE / 2, 0.0);
-    for (unsigned int k = 0; k < FFT_SIZE / 2; ++k) {
-        magnitudes[k] = std::sqrt(fft_out_real[k] * fft_out_real[k] + fft_out_imag[k] * fft_out_imag[k]);
-    }
-
-    // Find the index of the maximum magnitude
-    auto max_element_it = std::max_element(magnitudes.begin(), magnitudes.end());
-    unsigned int max_index = std::distance(magnitudes.begin(), max_element_it);
-
-    // Calculate the dominant frequency
-    double sample_rate = jack_get_sample_rate(jack_client); // Assuming `client` is your JACK client
-    double dominant_frequency = max_index * (sample_rate / FFT_SIZE);
-
-    // Log the dominant frequency (or process it further)
-    std::string s(dominant_frequency/10, '*');
-    std::cout << s << "\r\n";
-
-    fftw_destroy_plan(fft_plan);
 
     // Output from ring buffer
     for (unsigned int i = 0; i < nframes; i++) {
-        out[i] = ring_buffer[int(read_index)];
+        out[i] = lpf.next(ring_buffer[int(read_index)]);
         read_index += pitch_value;
         if (read_index >= BUFFER_SIZE) read_index -= BUFFER_SIZE;
     }
@@ -134,6 +98,16 @@ void key_press_listener()
         case KEY_RIGHT:
             pitch_value += 0.01;
             break;
+        case int('a'):
+        case int('A'):
+            lpf_cutoffFrequency += 100;
+            lpf_cutoffFrequency = lpf_cutoffFrequency > 20000 ? 20000 : lpf_cutoffFrequency;
+        case int('z'):
+        case int('Z'):
+            lpf_cutoffFrequency -= 100;
+            lpf_cutoffFrequency = lpf_cutoffFrequency <= 10 ? 10 : lpf_cutoffFrequency;
+            lpf.set_parameters(jack_get_sample_rate(jack_client),lpf_cutoffFrequency);
+            break;
         default:
             break;
         }
@@ -150,6 +124,8 @@ int main ( int argc, char *argv[] )
 
     int jack_status = start_jack_wrapper(process, jack_shutdown, input_port, output_port, jack_client);
     if (jack_status != 0) return jack_status;
+
+    lpf.set_parameters(jack_get_sample_rate(jack_client),500);
 
     // Start the key press listener in a separate thread
     std::thread key_listener_thread(key_press_listener);
