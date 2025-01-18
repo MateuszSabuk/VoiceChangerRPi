@@ -24,7 +24,7 @@ sudo echo """[Unit]
 Description=Simple feed forward from mic to speaker
 
 [Service]
-User=patch
+User=root
 ExecStart=/home/patch/voicechangerrpi/env/bin/python3 /home/patch/voicechangerrpi/run.py
 Restart=on-failure
 
