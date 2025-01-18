@@ -10,16 +10,15 @@ Installed [PatchboxOS](https://blokas.io/patchbox-os/)
 sudo apt update -y
 apt upgrade -y
 
-apt install python3-venv git
+apt install python3-venv git # dnsmasq iptables iptables-persistent
 
 git clone https://github.com/MateuszSabuk/voicechangerrpi
 cd voicechangerrpi
 python -m venv env --system-site-packages
 
-source env/bin/activate
-sudo pip install -r requirements.txt
+env/bin/pip install -r requirements.txt
 
-sudo -E env PATH=$PATH python3 config-script.py
+sudo -E env PATH=$PATH env/bin/python3 config-script.py
 
 sudo echo """[Unit]
 Description=Simple feed forward from mic to speaker
@@ -30,7 +29,7 @@ ExecStart=/home/patch/voicechangerrpi/env/bin/python3 /home/patch/voicechangerrp
 Restart=on-failure
 
 [Install]
-WantedBy=default.target""" > /etc/systemd/system/voicechanger.service
+WantedBy=default.target""" | sudo tee /etc/systemd/system/voicechanger.service
 
 sudo systemctl daemon-reload
 sudo systemctl enable voicechanger
@@ -41,10 +40,31 @@ echo """[Desktop Entry]
 Type=Application
 Name=SCServer
 Exec=lxterminal -e sclang /home/patch/voicechangerrpi/effects.scd
-""" > /home/patch/.config/autostart/scserver.desktop
+""" | tee /home/patch/.config/autostart/scserver.desktop
 
-sudo nmcli device wifi hotspot con-name VoiceChangerMati ssid VoiceChangerMati band bg password Password
-sed -i 's/autoconnect=false/autoconnect=true/' /etc/NetworkManager/system-connections/VoiceChangerMati.nmconnection
 ```
 
-3. Run the patchbox command and turn on the jack realtime
+1. Run the patchbox command
+   1. Turn on the hotspot
+   2. Turn on default login to desktop
+   3. Turn on realtime kernel
+   (sudo reboot)
+   4. Set the jack default device to sndrpigoogle
+
+```bash
+sudo sed -i 's/address1=172.24.1.1/address1=10.0.0.1/' /etc/NetworkManager/system-connections/pb-hotspot.nmconnection
+
+# # Maybe someday will make this part work for caption portal
+# echo """interface=wlan0
+# dhcp-range=10.0.0.2,10.0.0.100,255.255.255.0,24h
+# address=/#/10.0.0.1  # Redirect all DNS requests to Raspberry Pi
+# """ | sudo tee /etc/dnsmasq.conf
+
+# sudo sysctl -w net.ipv4.ip_forward=1
+# echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+# sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 5000
+
+# sudo reboot
+```
+
+
