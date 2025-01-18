@@ -1,3 +1,4 @@
+adafruit-python-shell
 flask
 requests
 python-osc
