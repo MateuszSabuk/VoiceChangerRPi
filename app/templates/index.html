@@ -7,53 +7,68 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>SuperCollider Effect Controller</h1>
-    <label for="effect">Select Effect:</label>
-    <select id="effect">
-        <option value="passthrough">Passthrough</option>
-        <option value="pitchShift">Pitch Shift</option>
-        <option value="reverb">Reverb</option>
-        <option value="distortion">Distortion</option>
-    	<option value="stop">Stop</option>
-    </select>
-    <br><br>
-    <label for="volume_input">Volume:</label>
-    <input type="range" id="volume_input" min="0.0" max="2.0" step="0.1">
-    <br><br>
-    <label for="pitch_input">Pitch:</label>
-    <input type="range" id="pitch_input" min="0.0" max="2.0" step="0.01">
-    <br><br>
-    <label for="reverb_mix_input">Reverb mix:</label>
-    <input type="range" id="reverb_mix_input" min="0.0" max="2.0" step="0.01">
-    <br><br>
-    <label for="reverb_room_input">Reverb room:</label>
-    <input type="range" id="reverb_room_input" min="0.0" max="1.0" step="0.01">
-    <br><br>
-    <label for="distortion_input">Distortion:</label>
-    <input type="range" id="distortion_input" min="0.0" max="5.0" step="0.01">
-    <br><br>
-    <script>
-        document.getElementById('effect').addEventListener('change', function() {
-            fetch('/select_effect', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ effect: this.value })
-            });
-        });
+    <div class="container">
+        <h1>SuperCollider Effect Controller</h1>
+        <label for="volume_input">Volume:</label>
+        <input type="range" id="volume_input" min="0.0" max="2.0" step="0.1">
+        <input type="radio" id="passthrough" name="effect" value="passthrough" checked="checked">
+        <label for="passthrough">Passthrough</label>
+        <input type="radio" id="stop" name="effect" value="stop">
+        <label for="stop">Stop</label>
+        
+        <div class="effect-container">
+            <input type="radio" id="pitchShift" name="effect" value="pitchShift">
+            <label for="pitchShift">Pitch Shift</label>
+            <input type="range" id="pitch_input" min="0.0" max="2.0" step="0.01">
+        </div>
+        
+        <div class="effect-container">
+            <input type="radio" id="reverb" name="effect" value="reverb">
+            <label for="reverb">Reverb</label>
+            <label for="reverb_mix_input">Reverb mix:</label>
+            <input type="range" id="reverb_mix_input" min="0.0" max="2.0" step="0.01">
+            <label for="reverb_room_input">Reverb room:</label>
+            <input type="range" id="reverb_room_input" min="0.0" max="1.0" step="0.01">
+        </div>
+        
+        <div class="effect-container">
+            <input type="radio" id="distortion" name="effect" value="distortion">
+            <label for="distortion">Distortion</label>
+            <input type="range" id="distortion_input" min="0.0" max="5.0" step="0.01">
+        </div>
 
-	for (let input_type of ["volume", "pitch", "reverb_mix", "reverb_room", "distortion"]) {
-	document.getElementById(input_type + "_input").addEventListener('input', function() {
-            fetch('/update_param', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ type: input_type, value: this.value})
+    </div>
+    <script>
+        // Listen for changes in the selected effect (radio buttons)
+        document.querySelectorAll('input[name="effect"]').forEach((radio) => {
+            radio.addEventListener('change', function () {
+                if (this.checked) {
+                    fetch('/select_effect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ effect: this.value })
+                    });
+                }
             });
         });
-	}
+    
+        // Add event listeners for the range sliders
+        for (let input_type of ["volume", "pitch", "reverb_mix", "reverb_room", "distortion"]) {
+            const inputElement = document.getElementById(input_type + "_input");
+            if (inputElement) {
+                inputElement.addEventListener('input', function () {
+                    fetch('/update_param', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ type: input_type, value: this.value })
+                    });
+                });
+            }
+        }
     </script>
 </body>
 </html>
