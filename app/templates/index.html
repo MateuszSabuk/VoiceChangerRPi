@@ -9,19 +9,25 @@
 <body>
     <div class="container">
         <h1>SuperCollider Effect Controller</h1>
+
+        <!-- Volume Control -->
         <label for="volume_input">Volume:</label>
         <input type="range" id="volume_input" min="0.0" max="2.0" step="0.1">
+
+        <!-- Basic Effects -->
         <input type="radio" id="passthrough" name="effect" value="passthrough" checked="checked">
         <label for="passthrough">Passthrough</label>
         <input type="radio" id="stop" name="effect" value="stop">
         <label for="stop">Stop</label>
-        
+
+        <!-- Pitch Shift Effect -->
         <div class="effect-container">
             <input type="radio" id="pitchShift" name="effect" value="pitchShift">
             <label for="pitchShift">Pitch Shift</label>
             <input type="range" id="pitch_input" min="0.0" max="2.0" step="0.01">
         </div>
-        
+
+        <!-- Reverb Effect -->
         <div class="effect-container">
             <input type="radio" id="reverb" name="effect" value="reverb">
             <label for="reverb">Reverb</label>
@@ -30,12 +36,56 @@
             <label for="reverb_room_input">Reverb room:</label>
             <input type="range" id="reverb_room_input" min="0.0" max="1.0" step="0.01">
         </div>
-        
+
+        <!-- Distortion Effect -->
         <div class="effect-container">
             <input type="radio" id="distortion" name="effect" value="distortion">
             <label for="distortion">Distortion</label>
             <input type="range" id="distortion_input" min="0.0" max="5.0" step="0.01">
         </div>
+
+        <!-- Darth Vader Effect -->
+        <div class="effect-container">
+            <input type="radio" id="darthVader" name="effect" value="darthVader">
+            <label for="darthVader">Darth Vader</label>
+        </div>
+
+        <!-- Vocoder Effect -->
+        <div class="effect-container">
+            <input type="radio" id="vocoder" name="effect" value="vocoder">
+            <label for="vocoder">Random</label>
+        </div>
+
+        <!-- Robot Effect -->
+        <div class="effect-container">
+            <input type="radio" id="robot" name="effect" value="robot">
+            <label for="robot">Robot</label>
+            <label for="bit_rate_input">Bit Rate:</label>
+            <input type="range" id="bit_rate_input" min="1000" max="44100" step="100">
+            <label for="bit_depth_input">Bit Depth:</label>
+            <input type="range" id="bit_depth_input" min="1" max="16" step="1">
+            <label for="ring_freq_input">Ring Frequency:</label>
+            <input type="range" id="ring_freq_input" min="20.0" max="2000.0" step="1.0">
+            <label for="ring_mod_amt_input">Ring Modulation Amplitude:</label>
+            <input type="range" id="ring_mod_amt_input" min="0.0" max="2.0" step="0.01">
+        </div>
+
+        <!-- Echo Effect -->
+        <div class="effect-container">
+            <input type="radio" id="echo" name="effect" value="echo">
+            <label for="echo">Echo</label>
+            <label for="delay_time_input">Delay Time:</label>
+            <input type="range" id="delay_time_input" min="0.01" max="2.0" step="0.01">
+            <label for="decay_time_input">Decay Time:</label>
+            <input type="range" id="decay_time_input" min="0.1" max="5.0" step="0.1">
+        </div>
+
+        <!-- Telephone Effect -->
+        <div class="effect-container">
+            <input type="radio" id="telephone" name="effect" value="telephone">
+            <label for="telephone">Telephone</label>
+        </div>
+
 
     </div>
     <script>
@@ -55,7 +105,7 @@
         });
     
         // Add event listeners for the range sliders
-        for (let input_type of ["volume", "pitch", "reverb_mix", "reverb_room", "distortion"]) {
+        for (let input_type of ["volume", "pitch", "reverb_mix", "reverb_room", "distortion", "vocoder_freq", "vocoder_amp", "vocoder_bands", "bit_rate", "bit_depth", "ring_freq", "ring_mod_amt", "delay_time", "decay_time"]) {
             const inputElement = document.getElementById(input_type + "_input");
             if (inputElement) {
                 inputElement.addEventListener('input', function () {

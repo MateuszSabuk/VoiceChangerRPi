@@ -18,6 +18,16 @@ def select_effect(effect_name):
         client.send_message("/effect", 3)
     elif effect_name == "distortion":
         client.send_message("/effect", 4)
+    elif effect_name == "darthVader":
+        client.send_message("/effect", 5)
+    elif effect_name == "vocoder":
+        client.send_message("/effect", 6)
+    elif effect_name == "robot":
+        client.send_message("/effect", 7)
+    elif effect_name == "echo":
+        client.send_message("/effect", 8)
+    elif effect_name == "telephone":
+        client.send_message("/effect", 9)
 
 # Function to update parameters
 def update_param(type, value):
@@ -32,6 +42,25 @@ def update_param(type, value):
         type_id = 4
     if type == "distortion":
         type_id = 5
+    if type == "vocoder_freq":
+        type_id = 6
+    if type == "vocoder_amp":
+        type_id = 7
+    if type == "vocoder_bands":
+        type_id = 8
+    if type == "bit_rate":
+        type_id = 9
+    if type == "bit_depth":
+        type_id = 10
+    if type == "ring_freq":
+        type_id = 11
+    if type == "ring_mod_amt":
+        type_id = 12
+    if type == "delay_time":
+        type_id = 13
+    if type == "decay_time":
+        type_id = 14
+
     client.send_message("/param", [type_id, float(value)])
     print(f"Param '{type}' updated to {value}")
 
